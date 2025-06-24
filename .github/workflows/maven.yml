@@ -24,22 +24,41 @@ jobs:
           java-version: '17'
           distribution: 'liberica'
 
-      - name: Install tools (Xvfb + ffmpeg)
-        run: sudo apt-get update && sudo apt-get install -y xvfb ffmpeg x11-utils
-
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 -screen 0 1366x768x24 &
-          sleep 3
+      - name: Install tools ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg x11-utils
 
       - name: Start recording screen with ffmpeg
         run: |
           ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
           echo $! > ffmpeg_pid.txt
 
-      - name: Run UI tests
+      - name: Pull and run Selenium container with GUI
         run: |
-          mvn clean test -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
+          docker pull selenium/standalone-chrome:latest
+          docker run -d \
+            --name selenium \
+            -p 4444:4444 \
+            -v /dev/shm:/dev/shm \
+            selenium/standalone-chrome:latest
+
+      - name: Wait for Selenium to be ready
+        run: |
+          echo "Waiting for Selenium to be ready..."
+          for i in {1..20}; do
+            if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true'; then
+              echo "Selenium is ready."
+              break
+            fi
+            echo "Still waiting..."
+            sleep 3
+          done
+
+      - name: Run Maven tests using remote Selenium
+        run: |
+          mvn clean test \
+            -DSEED_PHRASE=$USER \
+            -DPASSWORD=$PASS \
+            -Dselenium.remote.url=http://localhost:4444/wd/hub
 
       - name: Stop screen recording
         if: always()

@@ -41,8 +41,8 @@ public class WalletPage extends BasePage {
     @Override
     public WalletPage open() {
         log.info("Open WalletPage");
-//        driver.get("chrome-extension://kafmflljhfcafmhdjfjhglfehfoafkpk/home.html");
-        driver.get("chrome-extension://nlcnddbbfoiligldfhejjiiencpnfihh/home.html");
+        driver.get("chrome-extension://kafmflljhfcafmhdjfjhglfehfoafkpk/home.html");
+//        driver.get("chrome-extension://nlcnddbbfoiligldfhejjiiencpnfihh/home.html");
         return this;
     }
 
@@ -109,104 +109,6 @@ public class WalletPage extends BasePage {
     public SwapPage switchToMetaMask() throws AWTException, InterruptedException {
         log.info("Connecting MetaMask wallet");
         Thread.sleep(2000);
-
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_M);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_M);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.delay(50);
-
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_M);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_M);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.delay(50);
-
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_M);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_M);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.delay(50);
-
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_M);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_M);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.delay(50);
-
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_M);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_M);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.delay(50);
-
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_M);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_M);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.delay(50);
-
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_M);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_M);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.delay(50);
 
         robot.keyPress(KeyEvent.VK_SHIFT);
         robot.delay(50);
