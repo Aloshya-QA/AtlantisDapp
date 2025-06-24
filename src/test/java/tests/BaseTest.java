@@ -5,7 +5,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
-import pages.*;
+import pages.SwapPage;
+import pages.WalletPage;
 import utils.PropertyReader;
 import utils.TestListener;
 

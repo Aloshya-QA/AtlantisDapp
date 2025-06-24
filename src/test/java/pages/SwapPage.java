@@ -24,7 +24,6 @@ public class SwapPage extends BasePage {
             SWAP_BUTTON = "//button[text()='Swap']";
 
 
-
     public SwapPage(WebDriver driver) throws AWTException {
         super(driver);
     }
@@ -127,7 +126,7 @@ public class SwapPage extends BasePage {
 
                     wait.until(ExpectedConditions.attributeToBe(driver.findElement(By.xpath(SELL_INPUT)), "value", ""));
 
-                    totalTransactions --;
+                    totalTransactions--;
                 }
 
 

@@ -1,6 +1,7 @@
 package tests;
 
 import org.testng.annotations.Test;
+
 import java.awt.*;
 
 public class SwapTest extends BaseTest {

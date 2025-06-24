@@ -4,9 +4,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+
 import java.awt.*;
-import java.util.ArrayList;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 public class WalletPage extends BasePage {
 
@@ -105,7 +106,6 @@ public class WalletPage extends BasePage {
         robot.keyRelease(KeyEvent.VK_ENTER);
 
         robot.waitForIdle();
-
 
 
         return new SwapPage(driver);

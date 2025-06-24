@@ -16,6 +16,9 @@
         <selenium.version>4.32.0</selenium.version>
         <allure.version>2.24.0</allure.version>
         <aspectj.version>1.9.21</aspectj.version>
+        <lombok.version>1.18.38</lombok.version>
+        <log4j.version>2.24.3</log4j.version>
+        <yaml.version>2.12.3</yaml.version>
     </properties>
 
     <dependencyManagement>
@@ -63,6 +66,27 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>${aspectj.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${yaml.version}</version>
         </dependency>
     </dependencies>
 
