@@ -110,20 +110,33 @@ public class WalletPage extends BasePage {
         log.info("Connecting MetaMask wallet");
         Thread.sleep(2000);
 
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
         robot.keyPress(KeyEvent.VK_ALT);
+        robot.delay(50);
+        robot.keyPress(KeyEvent.VK_SHIFT);
         robot.delay(50);
         robot.keyPress(KeyEvent.VK_M);
         robot.delay(50);
 
         robot.keyRelease(KeyEvent.VK_M);
         robot.delay(50);
+        robot.keyRelease(KeyEvent.VK_SHIFT);
+        robot.delay(50);
         robot.keyRelease(KeyEvent.VK_ALT);
+        robot.delay(50);
+
+        robot.keyPress(KeyEvent.VK_ALT);
+        robot.delay(50);
+        robot.keyPress(KeyEvent.VK_SHIFT);
+        robot.delay(50);
+        robot.keyPress(KeyEvent.VK_M);
+        robot.delay(50);
+
+        robot.keyRelease(KeyEvent.VK_M);
         robot.delay(50);
         robot.keyRelease(KeyEvent.VK_SHIFT);
         robot.delay(50);
-
+        robot.keyRelease(KeyEvent.VK_ALT);
+        robot.delay(50);
 
         robot.keyPress(KeyEvent.VK_SHIFT);
         robot.delay(50);
