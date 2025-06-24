@@ -110,45 +110,39 @@ public class WalletPage extends BasePage {
         log.info("Connecting MetaMask wallet");
         Thread.sleep(2000);
 
+        while (true) {
         robot.keyPress(KeyEvent.VK_ALT);
         robot.delay(50);
-        robot.keyPress(KeyEvent.VK_TAB);
+            robot.keyPress(KeyEvent.VK_SHIFT);
+            robot.delay(50);
+            robot.keyPress(KeyEvent.VK_M);
         robot.delay(50);
 
-        robot.keyRelease(KeyEvent.VK_TAB);
+            robot.keyRelease(KeyEvent.VK_M);
+            robot.delay(50);
+            robot.keyRelease(KeyEvent.VK_SHIFT);
         robot.delay(50);
         robot.keyRelease(KeyEvent.VK_ALT);
         robot.delay(50);
-//
-//        robot.keyPress(KeyEvent.VK_ALT);
-//        robot.delay(50);
+
+            robot.waitForIdle();
+        }
+
 //        robot.keyPress(KeyEvent.VK_SHIFT);
 //        robot.delay(50);
-//        robot.keyPress(KeyEvent.VK_M);
+//        robot.keyPress(KeyEvent.VK_TAB);
 //        robot.delay(50);
 //
-//        robot.keyRelease(KeyEvent.VK_M);
+//        robot.keyRelease(KeyEvent.VK_TAB);
 //        robot.delay(50);
 //        robot.keyRelease(KeyEvent.VK_SHIFT);
+//
+//        robot.delay(100);
+//        robot.keyPress(KeyEvent.VK_ENTER);
 //        robot.delay(50);
-//        robot.keyRelease(KeyEvent.VK_ALT);
-//        robot.delay(50);
-
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.delay(50);
-        robot.keyPress(KeyEvent.VK_TAB);
-        robot.delay(50);
-
-        robot.keyRelease(KeyEvent.VK_TAB);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-
-        robot.delay(100);
-        robot.keyPress(KeyEvent.VK_ENTER);
-        robot.delay(50);
-        robot.keyRelease(KeyEvent.VK_ENTER);
-
-        robot.waitForIdle();
+//        robot.keyRelease(KeyEvent.VK_ENTER);
+//
+//        robot.waitForIdle();
 
 
         return new SwapPage(driver);
