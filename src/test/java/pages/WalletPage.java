@@ -112,6 +112,21 @@ public class WalletPage extends BasePage {
 
         robot.keyPress(KeyEvent.VK_SHIFT);
         robot.delay(50);
+        robot.keyPress(KeyEvent.VK_ALT);
+        robot.delay(50);
+        robot.keyPress(KeyEvent.VK_M);
+        robot.delay(50);
+
+        robot.keyRelease(KeyEvent.VK_M);
+        robot.delay(50);
+        robot.keyRelease(KeyEvent.VK_ALT);
+        robot.delay(50);
+        robot.keyRelease(KeyEvent.VK_SHIFT);
+        robot.delay(50);
+
+
+        robot.keyPress(KeyEvent.VK_SHIFT);
+        robot.delay(50);
         robot.keyPress(KeyEvent.VK_TAB);
         robot.delay(50);
 
