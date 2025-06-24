@@ -1,4 +1,4 @@
-name: UI Tests with Video & Allure
+name: Docker GUI CI with screen recording
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '**'
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     env:
@@ -17,38 +17,83 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t dapp-tests .
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'liberica'
 
-      - name: Run tests in container
+      - name: Pull Selenium Chrome with VNC
+        run: docker pull selenium/standalone-chrome:latest
+
+      - name: Run Selenium Chrome container with VNC and ffmpeg
         run: |
-          docker run --rm \
-            -e SEED="${SEED}" \
-            -e PASS="${PASS}" \
-            -v ${{ github.workspace }}/artifacts:/app/target/allure-results \
-            dapp-tests ./entrypoint.sh
+          docker run -d \
+            --name selenium \
+            -e SEED="$SEED" \
+            -e PASS="$PASS" \
+            -p 4444:4444 \
+            -p 5900:5900 \
+            -v ${{ github.workspace }}:/workspace \
+            selenium/standalone-chrome:latest
 
-      - name: Upload video
+      - name: Wait for Selenium to be ready
+        run: |
+          echo "Waiting for Selenium to be ready..."
+          for i in {1..20}; do
+            if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true'; then
+              echo "Selenium is ready."
+              break
+            fi
+            echo "Still waiting..."
+            sleep 3
+          done
+
+      - name: Start screen recording inside container
+        run: |
+          docker exec -d selenium bash -c "
+            apt-get update && apt-get install -y ffmpeg &&
+            ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99.0 \
+              -codec:v libx264 -pix_fmt yuv420p /workspace/screen_recording.mp4 > /dev/null 2>&1 &
+            echo \$! > /tmp/ffmpeg_pid.txt
+          "
+
+      - name: Run Maven tests using remote Selenium
+        run: |
+          mvn clean test \
+            -DSEED_PHRASE="${SEED}" \
+            -DPASSWORD="${PASS}" \
+            -Dselenium.remote.url=http://localhost:4444/wd/hub
+
+      - name: Stop screen recording inside container
+        if: always()
+        run: |
+          docker exec selenium bash -c "
+            kill -INT \$(cat /tmp/ffmpeg_pid.txt)
+            sleep 2
+          "
+
+      - name: Copy screen recording from container
+        if: always()
+        run: |
+          docker cp selenium:/workspace/screen_recording.mp4 .
+
+      - name: Upload screen recording
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: screen-recording
-          path: artifacts/screen_recording.mp4
+          path: screen_recording.mp4
 
-      - name: Upload Allure results
-        uses: actions/upload-artifact@v4
+      - name: Move screen recording to allure-results
+        if: always()
+        run: |
+          mkdir -p target/allure-results
+          cp screen_recording.mp4 target/allure-results/
+
+      - name: Get Allure history
+        uses: actions/checkout@v2
+        if: always()
+        continue-on-error: true
         with:
-          name: allure-results
-          path: artifacts/
-
-      - name: Generate Allure report
-        uses: simple-elf/allure-report-action@master
-        with:
-          allure_results: artifacts
-          allure_history: allure-history
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: allure-history
+          ref: gh-pages
