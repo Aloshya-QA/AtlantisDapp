@@ -64,6 +64,7 @@ public class BaseTest {
         if (ITestResult.FAILURE == result.getStatus()) {
             log.warn("Taking screenshot");
             takeScreenshot(driver);
+            log.warn("Attach record");
             AllureUtils.attachScreenRecording();
         }
         if (driver != null) {
