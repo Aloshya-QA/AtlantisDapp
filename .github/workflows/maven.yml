@@ -24,37 +24,42 @@ jobs:
           java-version: '17'
           distribution: 'liberica'
 
-      - name: Install tools ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg x11-utils
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg x11-utils curl
 
-      - name: Start recording screen with ffmpeg
+      - name: Start Selenium standalone-chrome-debug
         run: |
-          ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
-          echo $! > ffmpeg_pid.txt
-
-      - name: Pull and run Selenium container with GUI
-        run: |
-          docker pull selenium/standalone-chrome:latest
+          docker pull selenium/standalone-chrome-debug:latest
           docker run -d \
-          --name selenium \
-          -p 4444:4444 \
-          -v /dev/shm:/dev/shm \
-          selenium/standalone-chrome:latest
+            --name selenium \
+            -p 4444:4444 \
+            -e SE_NODE_SESSION_TIMEOUT=60 \
+            selenium/standalone-chrome-debug:latest
 
       - name: Wait for Selenium to be ready
         run: |
-          echo "Waiting for Selenium to be ready..."
-          for i in {1..20}; do
+          echo "Waiting for Selenium Grid..."
+          for i in {1..30}; do
             if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true'; then
               echo "Selenium is ready."
               break
             fi
             echo "Still waiting..."
-            sleep 3
+            sleep 2
           done
 
+      - name: Start screen recording with ffmpeg
+        run: |
+          ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 \
+            -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
+          echo $! > ffmpeg_pid.txt
+
       - name: Run Maven tests using remote Selenium
-        run: mvn clean test -DSEED_PHRASE="${SEED}" -DPASSWORD="${PASS}" -Dselenium.remote.url=http://localhost:4444/wd/hub
+        run: |
+          mvn clean test \
+            -DSEED_PHRASE="${SEED}" \
+            -DPASSWORD="${PASS}" \
+            -Dselenium.remote.url=http://localhost:4444/wd/hub
 
       - name: Stop screen recording
         if: always()
@@ -82,12 +87,14 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+
       - name: Allure Report action from marketplace
         uses: simple-elf/allure-report-action@master
         if: always()
         with:
           allure_results: target/allure-results
           allure_history: allure-history
+
       - name: Deploy report to Github Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v2
