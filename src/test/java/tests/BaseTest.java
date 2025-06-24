@@ -1,5 +1,6 @@
 package tests;
 
+import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -17,6 +18,7 @@ import java.util.Collections;
 
 import static utils.AllureUtils.takeScreenshot;
 
+@Log4j2
 @Listeners(TestListener.class)
 public class BaseTest {
 
@@ -36,6 +38,7 @@ public class BaseTest {
     @Parameters({"browser"})
     @BeforeMethod(alwaysRun = true)
     public void setup(@Optional("chrome") String browser) throws AWTException {
+        log.info("Browser initialization");
         ChromeOptions options = getChromeOptions();
         driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10L));
@@ -57,10 +60,12 @@ public class BaseTest {
     @AfterMethod(alwaysRun = true)
     public void tearDown(ITestResult result) {
         if (ITestResult.FAILURE == result.getStatus()) {
+            log.warn("Taking screenshot");
             takeScreenshot(driver);
         }
-//        if (driver != null) {
-//            driver.quit();
-//        }
+        if (driver != null) {
+            log.info("Closing browser");
+            driver.quit();
+        }
     }
 }

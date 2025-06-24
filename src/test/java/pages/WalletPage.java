@@ -1,14 +1,18 @@
 package pages;
 
+import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.testng.Assert;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
+@Log4j2
 public class WalletPage extends BasePage {
 
     private static final String
@@ -36,33 +40,44 @@ public class WalletPage extends BasePage {
 
     @Override
     public WalletPage open() {
+        log.info("Open WalletPage");
         driver.get("chrome-extension://kafmflljhfcafmhdjfjhglfehfoafkpk/home.html");
         return this;
     }
 
     @Override
     public WalletPage isOpened() {
-        wait.until(ExpectedConditions.visibilityOf(
-                driver.findElement(By.xpath(IMPORT_BUTTON))));
+        try {
+            wait.until(ExpectedConditions.visibilityOf(
+                    driver.findElement(By.xpath(IMPORT_BUTTON))));
+            log.info("WalletPage is opened");
+        } catch (TimeoutException e) {
+            log.error(e.getMessage());
+            Assert.fail("WalletPage isn't opened");
+        }
         return this;
     }
 
     public WalletPage clickCheckbox() {
+        log.info("Clicking checkbox from wallet");
         driver.findElement(By.xpath(CHECKBOX)).click();
         return this;
     }
 
     public WalletPage clickImport() {
+        log.info("Clicking 'Import' button from wallet");
         driver.findElement(By.xpath(IMPORT_BUTTON)).click();
         return this;
     }
 
     public WalletPage clickAccept() {
+        log.info("Clicking 'Accept' button from wallet");
         driver.findElement(By.xpath(ACCEPT_BUTTON)).click();
         return this;
     }
 
     public WalletPage inputSeedPhrase(String seed) {
+        log.info("Input the seed phrase");
         String[] words = seed.split(" ");
         ArrayList<WebElement> inputs = new ArrayList<>(driver.findElements(By.xpath(INPUT_FIELDS)));
         for (int i = 0; i < inputs.size(); i++) {
@@ -73,6 +88,7 @@ public class WalletPage extends BasePage {
     }
 
     public WalletPage setPassword(String password) {
+        log.info("Creating password");
         driver.findElement(By.xpath(NEW_PASSWORD_INPUT)).sendKeys(password);
         driver.findElement(By.xpath(CONFIRM_PASSWORD_INPUT)).sendKeys(password);
         driver.findElement(By.xpath(CHECKBOX)).click();
@@ -81,6 +97,7 @@ public class WalletPage extends BasePage {
     }
 
     public WalletPage clickDone() {
+        log.info("Clicking 'Done' button");
         driver.findElement(By.xpath(DONE_ONBOARDING_BUTTON)).click();
         driver.findElement(By.xpath(NEXT_BUTTON)).click();
         driver.findElement(By.xpath(DONE_BUTTON)).click();
@@ -89,6 +106,7 @@ public class WalletPage extends BasePage {
     }
 
     public SwapPage switchToMetaMask() throws AWTException, InterruptedException {
+        log.info("Connecting MetaMask wallet");
         Thread.sleep(2000);
 
         robot.keyPress(KeyEvent.VK_SHIFT);
@@ -112,6 +130,7 @@ public class WalletPage extends BasePage {
     }
 
     public SwapPage acceptSwitchNetwork() throws AWTException, InterruptedException {
+        log.info("Switch the network");
         Thread.sleep(2000);
 
         robot.keyPress(KeyEvent.VK_SHIFT);
