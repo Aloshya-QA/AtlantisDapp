@@ -3,8 +3,8 @@ package tests;
 import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 import pages.SwapPage;
@@ -14,8 +14,6 @@ import utils.PropertyReader;
 import utils.TestListener;
 
 import java.awt.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
@@ -41,11 +39,10 @@ public class BaseTest {
 
     @Parameters({"browser"})
     @BeforeMethod(alwaysRun = true)
-    public void setup(@Optional("chrome") String browser) throws AWTException, MalformedURLException {
+    public void setup(@Optional("chrome") String browser) throws AWTException {
         log.info("Browser initialization");
-        String seleniumUrl = System.getProperty("selenium.remote.url", "http://localhost:4444/wd/hub");
         ChromeOptions options = getChromeOptions();
-        driver = new RemoteWebDriver(new URL(seleniumUrl), options);
+        driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10L));
         driver.manage().window().setSize(new Dimension(1366, 768));
         swapPage = new SwapPage(driver);
