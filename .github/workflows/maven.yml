@@ -2,7 +2,8 @@ name: GUI CI with screen recording
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - '**'
 
 jobs:
   build:
