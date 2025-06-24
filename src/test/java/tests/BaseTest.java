@@ -9,6 +9,7 @@ import org.testng.ITestResult;
 import org.testng.annotations.*;
 import pages.SwapPage;
 import pages.WalletPage;
+import utils.AllureUtils;
 import utils.PropertyReader;
 import utils.TestListener;
 
@@ -63,6 +64,7 @@ public class BaseTest {
         if (ITestResult.FAILURE == result.getStatus()) {
             log.warn("Taking screenshot");
             takeScreenshot(driver);
+            AllureUtils.attachScreenRecording();
         }
         if (driver != null) {
             log.info("Closing browser");

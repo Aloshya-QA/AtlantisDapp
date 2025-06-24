@@ -1,65 +1,60 @@
-name: SauceDemo CI
+name: GUI CI with screen recording
 
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     env:
+      DISPLAY: :99
       SEED: ${{ secrets.SEED_PHRASE }}
       PASS: ${{ secrets.PASSWORD }}
-      DISPLAY: :99
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'liberica'
-          cache: maven
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Install tools (Xvfb + ffmpeg)
+        run: sudo apt-get update && sudo apt-get install -y xvfb ffmpeg x11-utils
 
-      - name: Run tests with xvfb
+      - name: Start Xvfb
         run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' \
+          Xvfb :99 -screen 0 1366x768x24 &
+          sleep 3
+
+      - name: Start recording screen with ffmpeg
+        run: |
+          ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
+          echo $! > ffmpeg_pid.txt
+
+      - name: Move screen recording to allure-results
+        if: always()
+        run: |
+          mkdir -p target/allure-results
+          cp screen_recording.mp4 target/allure-results/
+
+      - name: Run UI tests
+        run: |
           mvn clean test -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
 
-      - name: Run test
+      - name: Stop screen recording
+        if: always()
         run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' \
-          mvn clean test -DsuiteXmlFile='src/test/resources/AtlantisDappRun.xml' \
-          -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
+          kill -INT $(cat ffmpeg_pid.txt)
+          sleep 2
 
-      - name: Get Allure history
-        uses: actions/checkout@v2
+      - name: Upload screen recording
         if: always()
-        continue-on-error: true
+        uses: actions/upload-artifact@v4
         with:
-          ref: gh-pages
-          path: gh-pages
-
-      - name: Generate Allure report
-        uses: simple-elf/allure-report-action@master
-        if: always()
-        with:
-          allure_results: target/allure-results
-          allure_history: allure-history
-
-      - name: Deploy Allure report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: allure-history
+          name: screen-recording
+          path: screen_recording.mp4
