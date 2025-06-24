@@ -60,11 +60,7 @@ jobs:
           done
 
       - name: Run Maven tests using remote Selenium
-        run: |
-          mvn clean test \
-            -DSEED_PHRASE=$SEED \
-            -DPASSWORD=$PASS \
-            -Dselenium.remote.url=http://localhost:4444/wd/hub
+        run: mvn clean test -DSEED_PHRASE="${SEED}" -DPASSWORD="${PASS}" -Dselenium.remote.url=http://localhost:4444/wd/hub
 
       - name: Stop screen recording
         if: always()
