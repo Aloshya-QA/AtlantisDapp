@@ -24,28 +24,22 @@ jobs:
           java-version: '17'
           distribution: 'liberica'
 
-      - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg x11-utils xvfb
+      - name: Install tools ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg x11-utils
 
-      - name: Start virtual display (Xvfb)
+      - name: Start recording screen with ffmpeg
         run: |
-          Xvfb :99 -screen 0 1366x768x24 > /dev/null 2>&1 &
-          echo "Xvfb started"
-
-      - name: Start screen recording with ffmpeg
-        run: |
-          ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 \
-            -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
+          ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
           echo $! > ffmpeg_pid.txt
 
       - name: Pull and run Selenium container with GUI
         run: |
           docker pull selenium/standalone-chrome:latest
           docker run -d \
-            --name selenium \
-            -p 4444:4444 \
-            -v /dev/shm:/dev/shm \
-            selenium/standalone-chrome:latest
+          --name selenium \
+          -p 4444:4444 \
+          -v /dev/shm:/dev/shm \
+          selenium/standalone-chrome:latest
 
       - name: Wait for Selenium to be ready
         run: |
@@ -88,14 +82,12 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-
       - name: Allure Report action from marketplace
         uses: simple-elf/allure-report-action@master
         if: always()
         with:
           allure_results: target/allure-results
           allure_history: allure-history
-
       - name: Deploy report to Github Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v2
