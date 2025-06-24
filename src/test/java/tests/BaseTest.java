@@ -67,9 +67,9 @@ public class BaseTest {
             log.warn("Attach record");
             AllureUtils.attachScreenRecording();
         }
-        if (driver != null) {
-            log.info("Closing browser");
-            driver.quit();
-        }
+//        if (driver != null) {
+//            log.info("Closing browser");
+//            driver.quit();
+//        }
     }
 }
