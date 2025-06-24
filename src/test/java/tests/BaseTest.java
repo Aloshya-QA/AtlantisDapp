@@ -1,6 +1,7 @@
 package tests;
 
 import lombok.extern.log4j.Log4j2;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -42,7 +43,7 @@ public class BaseTest {
         ChromeOptions options = getChromeOptions();
         driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10L));
-        driver.manage().window().maximize();
+        driver.manage().window().setSize(new Dimension(1366, 768));
         swapPage = new SwapPage(driver);
         walletPage = new WalletPage(driver);
     }

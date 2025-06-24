@@ -13,7 +13,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <testng.version>7.11.0</testng.version>
-        <selenium.version>4.32.0</selenium.version>
+        <selenium.version>4.33.0</selenium.version>
         <allure.version>2.24.0</allure.version>
         <aspectj.version>1.9.21</aspectj.version>
         <lombok.version>1.18.38</lombok.version>
@@ -45,13 +45,6 @@
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>${selenium.version}</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.codeborne/selenide -->
-        <dependency>
-            <groupId>com.codeborne</groupId>
-            <artifactId>selenide</artifactId>
-            <version>7.9.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.testng/testng -->
