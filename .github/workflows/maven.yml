@@ -1,4 +1,4 @@
-name: SauceDemo CI
+name: SauceDemo CI (Windows)
 
 on:
   push:
@@ -9,12 +9,11 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     env:
       SEED: ${{ secrets.SEED_PHRASE }}
       PASS: ${{ secrets.PASSWORD }}
-      DISPLAY: :99
 
     steps:
       - name: Checkout repository
@@ -27,19 +26,11 @@ jobs:
           distribution: 'liberica'
           cache: maven
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Run tests (AWT + MetaMask)
+        run: mvn clean test -DSEED_PHRASE="$env:SEED" -DPASSWORD="$env:PASS"
 
-      - name: Run tests with xvfb
-        run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' \
-          mvn clean test -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
-
-      - name: Run test
-        run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' \
-          mvn clean test -DsuiteXmlFile='src/test/resources/AtlantisDappRun.xml' \
-          -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
+      - name: Run suite (optional)
+        run: mvn clean test -DsuiteXmlFile='src/test/resources/AtlantisDappRun.xml' -DSEED_PHRASE="$env:SEED" -DPASSWORD="$env:PASS"
 
       - name: Get Allure history
         uses: actions/checkout@v2
