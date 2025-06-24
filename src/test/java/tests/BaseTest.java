@@ -16,7 +16,6 @@ import utils.TestListener;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -30,8 +29,9 @@ public class BaseTest {
     SwapPage swapPage;
     WalletPage walletPage;
 
-    private static final String
-            EXTENSION_PATH = Paths.get("src/extensions/metamask").toAbsolutePath().toString();
+    //    private static final String
+//            EXTENSION_PATH = Paths.get("src/extensions/metamask").toAbsolutePath().toString();
+    private static final String EXTENSION_PATH = "/workspace/src/extensions/metamask";
 
     String
             SEED_PHRASE = System.getProperty("SEED_PHRASE", PropertyReader.getProperty("SEED_PHRASE")),
@@ -43,9 +43,8 @@ public class BaseTest {
     @BeforeMethod(alwaysRun = true)
     public void setup(@Optional("chrome") String browser) throws AWTException, MalformedURLException {
         log.info("Browser initialization");
-        String remoteUrl = System.getProperty("selenium.remote.url");
         ChromeOptions options = getChromeOptions();
-        driver = new RemoteWebDriver(new URL(remoteUrl), options);
+        driver = new RemoteWebDriver(new URL(System.getProperty("selenium.remote.url")), options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10L));
         driver.manage().window().setSize(new Dimension(1366, 768));
         swapPage = new SwapPage(driver);

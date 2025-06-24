@@ -1,12 +1,11 @@
-name: Docker GUI CI with Metamask and Screen Recording
+name: GUI CI with Chrome, VNC, AWT and screen recording
 
 on:
   push:
-    branches:
-      - '**'
+    branches: [ "**" ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     env:
@@ -21,47 +20,38 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'liberica'
 
-      - name: Pull Selenium Chrome
-        run: docker pull selenium/standalone-chrome:latest
+      - name: Pull Chrome with GUI (AWT-capable)
+        run: docker pull selenium/standalone-chrome-debug
 
-      - name: Run Selenium with Metamask and ffmpeg
+      - name: Run Chrome container with GUI and VNC
         run: |
-          docker run -d \
-            --name selenium \
+          docker run -d --name selenium \
             -e SEED="$SEED" \
             -e PASS="$PASS" \
-            -v ${{ github.workspace }}/src/extensions/metamask:/opt/metamask \
-            -v ${{ github.workspace }}:/workspace \
             -p 4444:4444 \
             -p 5900:5900 \
-            selenium/standalone-chrome:latest bash -c "
-              apt-get update && apt-get install -y ffmpeg x11-utils &&
-              google-chrome \
-                --no-sandbox \
-                --disable-dev-shm-usage \
-                --user-data-dir=/tmp/chrome-user-data \
-                --load-extension=/opt/metamask &
-              ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99.0 \
-                -codec:v libx264 -pix_fmt yuv420p /workspace/screen_recording.mp4 > /dev/null 2>&1 &
-              echo \$! > /tmp/ffmpeg_pid.txt &&
-              /opt/bin/entry_point.sh
-            "
+            -v ${{ github.workspace }}:/workspace \
+            selenium/standalone-chrome-debug
 
-      - name: Wait for Selenium to be ready
+      - name: Wait for Selenium
         run: |
-          echo "Waiting for Selenium to be ready..."
           for i in {1..20}; do
-            if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true'; then
-              echo "Selenium is ready."
-              break
-            fi
-            echo "Still waiting..."
+            curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true' && break
+            echo "Waiting for Selenium..."
             sleep 3
           done
 
-      - name: Run Maven tests with remote Selenium
+      - name: Start screen recording inside container
+        run: |
+          docker exec -d selenium bash -c '
+            apt-get update && apt-get install -y ffmpeg &&
+            ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 \
+              -codec:v libx264 -pix_fmt yuv420p /workspace/screen_recording.mp4 > /dev/null 2>&1 &
+            echo $! > /tmp/ffmpeg_pid.txt
+          '
+
+      - name: Run tests with Maven
         run: |
           mvn clean test \
             -DSEED_PHRASE="${SEED}" \
@@ -70,16 +60,11 @@ jobs:
 
       - name: Stop screen recording
         if: always()
-        run: |
-          docker exec selenium bash -c "
-            kill -INT \$(cat /tmp/ffmpeg_pid.txt)
-            sleep 2
-          "
+        run: docker exec selenium bash -c 'kill -INT $(cat /tmp/ffmpeg_pid.txt); sleep 2'
 
-      - name: Copy screen recording from container
+      - name: Copy screen recording
         if: always()
-        run: |
-          docker cp selenium:/workspace/screen_recording.mp4 .
+        run: docker cp selenium:/workspace/screen_recording.mp4 .
 
       - name: Upload screen recording
         if: always()
@@ -87,35 +72,6 @@ jobs:
         with:
           name: screen-recording
           path: screen_recording.mp4
-
-      - name: Move recording to allure-results
-        if: always()
-        run: |
-          mkdir -p target/allure-results
-          cp screen_recording.mp4 target/allure-results/
-
-      - name: Get Allure history
-        uses: actions/checkout@v2
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-
-      - name: Generate Allure report
-        uses: simple-elf/allure-report-action@master
-        if: always()
-        with:
-          allure_results: target/allure-results
-          allure_history: allure-history
-
-      - name: Deploy Allure report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: allure-history
 
       - name: Cleanup
         if: always()
