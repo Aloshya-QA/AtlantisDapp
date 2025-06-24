@@ -1,0 +1,1 @@
+[{"uid":"79bedd9e6aa744c","name":"checkWebDriverPrivacy","time":{"start":1750796733356,"stop":1750796733813,"duration":457},"status":"passed","severity":"normal"},{"uid":"89df614056b1216f","name":"checkSwap","time":{"start":1750796714357,"stop":1750796731779,"duration":17422},"status":"broken","severity":"normal"}]
