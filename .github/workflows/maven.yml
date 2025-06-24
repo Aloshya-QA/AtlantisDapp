@@ -1,6 +1,3 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
 name: SauceDemo CI
 
 on:
@@ -15,12 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      USER: ${{secrets.SEED_PHRASE}}
-      PASS: ${{secrets.PASSWORD}}
+      SEED: ${{ secrets.SEED_PHRASE }}
+      PASS: ${{ secrets.PASSWORD }}
+      DISPLAY: :99
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -28,20 +27,19 @@ jobs:
           distribution: 'liberica'
           cache: maven
 
-      - name: Install Xvfb
+      - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Start Xvfb
+      - name: Run tests with xvfb
         run: |
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1366x768x24 &
-          echo "DISPLAY=:99" >> $GITHUB_ENV
+          xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' \
+          mvn clean test -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
 
-      - name: Run tests (AWT-safe)
-        run: mvn clean test -DSEED_PHRASE=$SEED -DPASSWORD=$PASS
-
-      - name: Run tests
-        run: mvn clean test -DsuiteXmlFile='src/test/resources/AtlantisDappRun.xml'
+      - name: Run test
+        run: |
+          xvfb-run --auto-servernum --server-args='-screen 0 1366x768x24' \
+          mvn clean test -DsuiteXmlFile='src/test/resources/AtlantisDappRun.xml' \
+          -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
 
       - name: Get Allure history
         uses: actions/checkout@v2
@@ -51,18 +49,17 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Allure Report action from marketplace
+      - name: Generate Allure report
         uses: simple-elf/allure-report-action@master
         if: always()
         with:
           allure_results: target/allure-results
           allure_history: allure-history
 
-      - name: Deploy report to Github Pages
+      - name: Deploy Allure report to GitHub Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v2
         env:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: allure-history
-
