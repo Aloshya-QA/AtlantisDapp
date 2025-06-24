@@ -1,4 +1,4 @@
-name: GUI CI with screen recording
+name: UI Tests with Video & Allure
 
 on:
   push:
@@ -6,11 +6,10 @@ on:
       - '**'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     env:
-      DISPLAY: :99
       SEED: ${{ secrets.SEED_PHRASE }}
       PASS: ${{ secrets.PASSWORD }}
 
@@ -18,85 +17,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'liberica'
+      - name: Build Docker image
+        run: docker build -t dapp-tests .
 
-      - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg x11-utils curl
-
-      - name: Start Selenium standalone-chrome-debug
+      - name: Run tests in container
         run: |
-          docker pull selenium/standalone-chrome-debug:latest
-          docker run -d \
-            --name selenium \
-            -p 4444:4444 \
-            -e SE_NODE_SESSION_TIMEOUT=60 \
-            selenium/standalone-chrome-debug:latest
+          docker run --rm \
+            -e SEED="${SEED}" \
+            -e PASS="${PASS}" \
+            -v ${{ github.workspace }}/artifacts:/app/target/allure-results \
+            dapp-tests ./entrypoint.sh
 
-      - name: Wait for Selenium to be ready
-        run: |
-          echo "Waiting for Selenium Grid..."
-          for i in {1..30}; do
-            if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true'; then
-              echo "Selenium is ready."
-              break
-            fi
-            echo "Still waiting..."
-            sleep 2
-          done
-
-      - name: Start screen recording with ffmpeg
-        run: |
-          ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 \
-            -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
-          echo $! > ffmpeg_pid.txt
-
-      - name: Run Maven tests using remote Selenium
-        run: |
-          mvn clean test \
-            -DSEED_PHRASE="${SEED}" \
-            -DPASSWORD="${PASS}" \
-            -Dselenium.remote.url=http://localhost:4444/wd/hub
-
-      - name: Stop screen recording
-        if: always()
-        run: |
-          kill -INT $(cat ffmpeg_pid.txt)
-          sleep 2
-
-      - name: Upload screen recording
-        if: always()
+      - name: Upload video
         uses: actions/upload-artifact@v4
         with:
           name: screen-recording
-          path: screen_recording.mp4
+          path: artifacts/screen_recording.mp4
 
-      - name: Move screen recording to allure-results
-        if: always()
-        run: |
-          mkdir -p target/allure-results
-          cp screen_recording.mp4 target/allure-results/
-
-      - name: Get Allure history
-        uses: actions/checkout@v2
-        if: always()
-        continue-on-error: true
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
         with:
-          ref: gh-pages
-          path: gh-pages
+          name: allure-results
+          path: artifacts/
 
-      - name: Allure Report action from marketplace
+      - name: Generate Allure report
         uses: simple-elf/allure-report-action@master
-        if: always()
         with:
-          allure_results: target/allure-results
+          allure_results: artifacts
           allure_history: allure-history
 
-      - name: Deploy report to Github Pages
-        if: always()
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v2
         env:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
