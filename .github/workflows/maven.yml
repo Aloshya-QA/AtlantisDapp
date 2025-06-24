@@ -36,12 +36,6 @@ jobs:
           ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99 -codec:v libx264 -pix_fmt yuv420p screen_recording.mp4 > /dev/null 2>&1 &
           echo $! > ffmpeg_pid.txt
 
-      - name: Move screen recording to allure-results
-        if: always()
-        run: |
-          mkdir -p target/allure-results
-          cp screen_recording.mp4 target/allure-results/
-
       - name: Run UI tests
         run: |
           mvn clean test -DSEED_PHRASE="$SEED" -DPASSWORD="$PASS"
@@ -58,3 +52,9 @@ jobs:
         with:
           name: screen-recording
           path: screen_recording.mp4
+
+      - name: Move screen recording to allure-results
+        if: always()
+        run: |
+          mkdir -p target/allure-results
+          cp screen_recording.mp4 target/allure-results/
