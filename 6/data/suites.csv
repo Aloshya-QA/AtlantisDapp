@@ -1,3 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","609","checkWebDriverPrivacy","Surefire suite","Tue Jun 24 20:33:09 GMT 2025","passed","Tue Jun 24 20:33:09 GMT 2025","tests.SwapTest","Surefire test","tests.SwapTest","checkWebDriverPrivacy"
-"","16211","checkSwap","Surefire suite","Tue Jun 24 20:32:51 GMT 2025","broken","Tue Jun 24 20:33:07 GMT 2025","tests.SwapTest","Surefire test","tests.SwapTest","checkSwap"
