@@ -57,11 +57,7 @@ jobs:
           done
 
       - name: Run Maven tests
-        run: mvn clean test \
-          -DSEED_PHRASE="${{ env.SEED_PHRASE }}" \
-          -DPASSWORD="${{ env.PASSWORD }}" \
-          -Dselenium.remote.url=http://localhost:4444/wd/hub \
-          -Dextension.path=/workspace/extensions/metamask
+        run: mvn clean test -DSEED_PHRASE="${{ env.SEED_PHRASE }}" -DPASSWORD="${{ env.PASSWORD }}" -Dselenium.remote.url=http://localhost:4444/wd/hub -Dextension.path=/workspace/extensions/metamask
 
       - name: Stop screen recording
         if: always()
