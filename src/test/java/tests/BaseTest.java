@@ -15,7 +15,6 @@ import utils.TestListener;
 
 import java.awt.*;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Collections;
 
 import static utils.AllureUtils.takeScreenshot;
@@ -43,8 +42,8 @@ public class BaseTest {
         log.info("Browser initialization");
         ChromeOptions options = getChromeOptions();
         driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10L));
         driver.manage().window().setSize(new Dimension(1366, 768));
+        driver.manage().window().maximize();
         swapPage = new SwapPage(driver);
         walletPage = new WalletPage(driver);
     }
@@ -67,9 +66,9 @@ public class BaseTest {
             log.warn("Attach record");
             AllureUtils.attachScreenRecording();
         }
-//        if (driver != null) {
-//            log.info("Closing browser");
-//            driver.quit();
-//        }
+        if (driver != null) {
+            log.info("Closing browser");
+            driver.quit();
+        }
     }
 }
