@@ -3,8 +3,8 @@ package tests;
 import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 import pages.SwapPage;
@@ -14,6 +14,8 @@ import utils.PropertyReader;
 import utils.TestListener;
 
 import java.awt.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
@@ -28,8 +30,11 @@ public class BaseTest {
     SwapPage swapPage;
     WalletPage walletPage;
 
-    private static final String
-            EXTENSION_PATH = Paths.get("src/extensions/metamask").toAbsolutePath().toString();
+    // Путь к расширению теперь берётся из параметра, если он передан, иначе локальный по умолчанию
+    private static final String EXTENSION_PATH = System.getProperty(
+            "extension.path",
+            Paths.get("src/extensions/metamask").toAbsolutePath().toString()
+    );
 
     String
             SEED_PHRASE = System.getProperty("SEED_PHRASE", PropertyReader.getProperty("SEED_PHRASE")),
@@ -39,10 +44,11 @@ public class BaseTest {
 
     @Parameters({"browser"})
     @BeforeMethod(alwaysRun = true)
-    public void setup(@Optional("chrome") String browser) throws AWTException {
+    public void setup(@Optional("chrome") String browser) throws AWTException, MalformedURLException {
         log.info("Browser initialization");
+        URL seleniumUrl = new URL(System.getProperty("selenium.remote.url", "http://localhost:4444/wd/hub"));
         ChromeOptions options = getChromeOptions();
-        driver = new ChromeDriver(options);
+        driver = new RemoteWebDriver(seleniumUrl, options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10L));
         driver.manage().window().setSize(new Dimension(1366, 768));
         swapPage = new SwapPage(driver);
@@ -51,11 +57,21 @@ public class BaseTest {
 
     private static ChromeOptions getChromeOptions() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--disable-extensions-except=" + EXTENSION_PATH);
-        options.addArguments("--load-extension=" + EXTENSION_PATH);
-        options.addArguments("--disable-blink-features=AutomationControlled");
+
+        options.addArguments(
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-blink-features=AutomationControlled",
+                "--remote-debugging-port=9222",
+                "--disable-features=VizDisplayCompositor",
+                "--disable-extensions-except=" + EXTENSION_PATH,
+                "--load-extension=" + EXTENSION_PATH
+        );
+
         options.setExperimentalOption("excludeSwitches",
                 Collections.singletonList("enable-automation"));
+
         return options;
     }
 
@@ -67,9 +83,9 @@ public class BaseTest {
             log.warn("Attach record");
             AllureUtils.attachScreenRecording();
         }
-//        if (driver != null) {
-//            log.info("Closing browser");
-//            driver.quit();
-//        }
+        if (driver != null) {
+            log.info("Closing browser");
+            driver.quit();
+        }
     }
 }

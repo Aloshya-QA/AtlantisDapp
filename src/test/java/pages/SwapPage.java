@@ -73,7 +73,7 @@ public class SwapPage extends BasePage {
         driver.findElement(By.xpath(CONNECT_BUTTON)).click();
         wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath(BUTTON))));
         driver.findElement(By.xpath(METAMASK_BUTTON)).click();
-        Thread.sleep(2000);
+        Thread.sleep(10000);
         return new WalletPage(driver);
     }
 
