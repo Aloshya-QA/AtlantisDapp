@@ -43,7 +43,6 @@ public class BaseTest {
         ChromeOptions options = getChromeOptions();
         driver = new ChromeDriver(options);
         driver.manage().window().setSize(new Dimension(1366, 768));
-        driver.manage().window().maximize();
         swapPage = new SwapPage(driver);
         walletPage = new WalletPage(driver);
     }
