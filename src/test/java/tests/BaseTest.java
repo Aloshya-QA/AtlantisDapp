@@ -16,6 +16,7 @@ import utils.TestListener;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -29,9 +30,8 @@ public class BaseTest {
     SwapPage swapPage;
     WalletPage walletPage;
 
-    //    private static final String
-//            EXTENSION_PATH = Paths.get("src/extensions/metamask").toAbsolutePath().toString();
-    private static final String EXTENSION_PATH = "/workspace/src/extensions/metamask";
+    private static final String
+            EXTENSION_PATH = Paths.get("src/extensions/metamask").toAbsolutePath().toString();
 
     String
             SEED_PHRASE = System.getProperty("SEED_PHRASE", PropertyReader.getProperty("SEED_PHRASE")),
@@ -43,8 +43,9 @@ public class BaseTest {
     @BeforeMethod(alwaysRun = true)
     public void setup(@Optional("chrome") String browser) throws AWTException, MalformedURLException {
         log.info("Browser initialization");
+        URL seleniumUrl = new URL(System.getProperty("selenium.remote.url", "http://localhost:4444/wd/hub"));
         ChromeOptions options = getChromeOptions();
-        driver = new RemoteWebDriver(new URL(System.getProperty("selenium.remote.url")), options);
+        driver = new RemoteWebDriver(seleniumUrl, options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10L));
         driver.manage().window().setSize(new Dimension(1366, 768));
         swapPage = new SwapPage(driver);
@@ -53,11 +54,21 @@ public class BaseTest {
 
     private static ChromeOptions getChromeOptions() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--disable-extensions-except=" + EXTENSION_PATH);
-        options.addArguments("--load-extension=" + EXTENSION_PATH);
-        options.addArguments("--disable-blink-features=AutomationControlled");
+
+        options.addArguments(
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-blink-features=AutomationControlled",
+                "--remote-debugging-port=9222",
+                "--disable-features=VizDisplayCompositor",
+                "--disable-extensions-except=" + EXTENSION_PATH,
+                "--load-extension=" + EXTENSION_PATH
+        );
+
         options.setExperimentalOption("excludeSwitches",
                 Collections.singletonList("enable-automation"));
+
         return options;
     }
 
