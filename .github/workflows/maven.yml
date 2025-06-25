@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
+          distribution: 'liberica'
 
       - name: Pull Chrome with GUI (AWT-capable)
         run: docker pull selenium/standalone-chrome-debug
