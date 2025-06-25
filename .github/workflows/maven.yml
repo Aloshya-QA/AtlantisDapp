@@ -34,42 +34,55 @@ jobs:
 
           docker build -t selenium-chrome-ffmpeg:latest .
 
-      - name: Run selenium container with VNC and MetaMask extension
+      - name: Run selenium container with VNC and MetaMask extension (Xvfb included)
         run: |
-          docker run -d --rm --name selenium-debug \
+          docker run -d --name selenium-debug \
             -p 4444:4444 -p 5900:5900 \
             -v ${{ github.workspace }}/src/extensions/metamask:/workspace/extensions/metamask \
             -v ${{ github.workspace }}:/workspace \
-            selenium-chrome-ffmpeg:latest
+            selenium-chrome-ffmpeg:latest \
+            bash -c "Xvfb :99 -screen 0 1366x768x24 & /opt/bin/entry_point.sh"
 
       - name: Start screen recording inside the container
         run: |
+          sleep 5  # подождем запуска Xvfb
           docker exec -d selenium-debug bash -c "\
             export DISPLAY=:99 && \
             ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99.0 \
-            -codec:v libx264 -pix_fmt yuv420p /workspace/screen_recording.mp4"
+            -codec:v libx264 -pix_fmt yuv420p /workspace/screen_recording.mp4 \
+            > /workspace/ffmpeg.log 2>&1"
 
       - name: Wait for selenium to be ready
         run: |
           for i in {1..20}; do
             if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready":true'; then
-              echo "Selenium is ready"
+              echo "✅ Selenium is ready"
               break
             fi
-            echo "Waiting for Selenium..."
+            echo "⏳ Waiting for Selenium..."
             sleep 3
           done
 
       - name: Run Maven tests
-        run: mvn clean test -DSEED_PHRASE="${{ env.SEED_PHRASE }}" -DPASSWORD="${{ env.PASSWORD }}" -Dselenium.remote.url=http://localhost:4444/wd/hub -Dextension.path=/workspace/extensions/metamask
+        run: |
+          mvn clean test \
+            -DSEED_PHRASE="${{ env.SEED_PHRASE }}" \
+            -DPASSWORD="${{ env.PASSWORD }}" \
+            -Dselenium.remote.url=http://localhost:4444/wd/hub \
+            -Dextension.path=/workspace/extensions/metamask
 
       - name: Stop screen recording
         if: always()
-        run: docker exec selenium-debug pkill ffmpeg
+        run: docker exec selenium-debug pkill ffmpeg || true
 
       - name: Copy screen recording
         if: always()
-        run: docker cp selenium-debug:/workspace/screen_recording.mp4 ./screen_recording.mp4
+        run: |
+          if docker exec selenium-debug test -f /workspace/screen_recording.mp4 || true; then
+            docker cp selenium-debug:/workspace/screen_recording.mp4 ./screen_recording.mp4
+          else
+            echo "⚠️ screen_recording.mp4 not found in container"
+          fi
 
       - name: Upload screen recording artifact
         if: always()
@@ -78,12 +91,39 @@ jobs:
           name: screen-recording
           path: screen_recording.mp4
 
+      - name: Upload ffmpeg log
+        if: always()
+        run: |
+          if docker exec selenium-debug test -f /workspace/ffmpeg.log || true; then
+            docker cp selenium-debug:/workspace/ffmpeg.log ./ffmpeg.log
+          else
+            echo "⚠️ ffmpeg.log not found in container"
+          fi
+
+      - name: Upload ffmpeg log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-log
+          path: ffmpeg.log
+
+      - name: Print ffmpeg log if failed
+        if: failure()
+        run: |
+          echo "--- ffmpeg log ---"
+          cat ffmpeg.log || echo "⚠️ ffmpeg.log not found"
+
       - name: Prepare allure-results folder
         run: mkdir -p target/allure-results
 
       - name: Move screen recording to allure-results
         if: always()
-        run: cp screen_recording.mp4 target/allure-results/
+        run: |
+          if [ -f screen_recording.mp4 ]; then
+            cp screen_recording.mp4 target/allure-results/
+          else
+            echo "⚠️ screen_recording.mp4 not found locally"
+          fi
 
       - name: Generate Allure report
         uses: simple-elf/allure-report-action@master
@@ -100,6 +140,13 @@ jobs:
         with:
           publish_dir: ./allure-report
 
+      - name: Print Selenium container logs if failed
+        if: failure()
+        run: docker logs selenium-debug || true
+
       - name: Cleanup
         if: always()
-        run: docker rm -f selenium-debug || true
+        run: |
+          if docker ps -a --format '{{.Names}}' | grep -q selenium-debug; then
+            docker rm -f selenium-debug || true
+          fi
