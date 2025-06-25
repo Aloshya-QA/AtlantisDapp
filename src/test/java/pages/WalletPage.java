@@ -41,8 +41,8 @@ public class WalletPage extends BasePage {
     @Override
     public WalletPage open() {
         log.info("Open WalletPage");
-//        driver.get("chrome-extension://kafmflljhfcafmhdjfjhglfehfoafkpk/home.html");
-        driver.get("chrome-extension://nlcnddbbfoiligldfhejjiiencpnfihh/home.html");
+        driver.get("chrome-extension://kafmflljhfcafmhdjfjhglfehfoafkpk/home.html");
+//        driver.get("chrome-extension://nlcnddbbfoiligldfhejjiiencpnfihh/home.html");
         return this;
     }
 
