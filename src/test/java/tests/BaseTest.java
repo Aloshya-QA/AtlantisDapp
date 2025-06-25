@@ -30,8 +30,11 @@ public class BaseTest {
     SwapPage swapPage;
     WalletPage walletPage;
 
-    private static final String
-            EXTENSION_PATH = Paths.get("src/extensions/metamask").toAbsolutePath().toString();
+    // Путь к расширению теперь берётся из параметра, если он передан, иначе локальный по умолчанию
+    private static final String EXTENSION_PATH = System.getProperty(
+            "extension.path",
+            Paths.get("src/extensions/metamask").toAbsolutePath().toString()
+    );
 
     String
             SEED_PHRASE = System.getProperty("SEED_PHRASE", PropertyReader.getProperty("SEED_PHRASE")),
@@ -80,9 +83,9 @@ public class BaseTest {
             log.warn("Attach record");
             AllureUtils.attachScreenRecording();
         }
-//        if (driver != null) {
-//            log.info("Closing browser");
-//            driver.quit();
-//        }
+        if (driver != null) {
+            log.info("Closing browser");
+            driver.quit();
+        }
     }
 }

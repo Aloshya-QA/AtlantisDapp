@@ -23,8 +23,16 @@ jobs:
           distribution: 'liberica'
           java-version: '17'
 
-      - name: Pull selenium standalone chrome debug image
-        run: docker pull selenium/standalone-chrome-debug:latest
+      - name: Build custom Selenium image with ffmpeg
+        run: |
+          echo "
+          FROM selenium/standalone-chrome-debug:latest
+          USER root
+          RUN apt-get update && apt-get install -y ffmpeg
+          USER seluser
+          " > Dockerfile
+
+          docker build -t selenium-chrome-ffmpeg:latest .
 
       - name: Run selenium container with VNC, extension and screen recording
         run: |
@@ -32,10 +40,9 @@ jobs:
             -p 4444:4444 -p 5900:5900 \
             -v ${{ github.workspace }}/src/extensions/metamask:/workspace/extensions/metamask \
             -v ${{ github.workspace }}:/workspace \
-            selenium/standalone-chrome-debug:latest \
-            bash -c "apt-get update && apt-get install -y ffmpeg && \
-            ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99.0 \
-              -codec:v libx264 -pix_fmt yuv420p /workspace/screen_recording.mp4 > /dev/null 2>&1 & \
+            selenium-chrome-ffmpeg:latest \
+            bash -c "ffmpeg -y -video_size 1366x768 -framerate 15 -f x11grab -i :99.0 \
+            -codec:v libx264 -pix_fmt yuv420p /workspace/screen_recording.mp4 > /dev/null 2>&1 & \
             exec /opt/bin/entry_point.sh"
 
       - name: Wait for selenium to be ready
@@ -53,7 +60,8 @@ jobs:
         run: mvn clean test \
           -DSEED_PHRASE="${{ env.SEED_PHRASE }}" \
           -DPASSWORD="${{ env.PASSWORD }}" \
-          -Dselenium.remote.url=http://localhost:4444/wd/hub
+          -Dselenium.remote.url=http://localhost:4444/wd/hub \
+          -Dextension.path=/workspace/extensions/metamask
 
       - name: Stop screen recording
         if: always()
@@ -70,7 +78,6 @@ jobs:
           name: screen-recording
           path: screen_recording.mp4
 
-      # Опционально — Allure отчёт, если используешь Allure:
       - name: Prepare allure-results folder
         run: mkdir -p target/allure-results
 
